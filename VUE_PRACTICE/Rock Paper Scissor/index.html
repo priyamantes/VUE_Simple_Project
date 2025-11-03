@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rock Paper Scissors - Vue.js</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .game-container {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+      text-align: center;
+      width: 340px;
+    }
+
+    h1 {
+      font-weight: 600;
+      margin-bottom: 20px;
+      font-size: 1.8em;
+      color: #38bdf8;
+    }
+
+    .name-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    input {
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      width: 80%;
+      font-size: 1em;
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .start-btn {
+      background: #22c55e;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .start-btn:hover {
+      background: #16a34a;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 20px;
+    }
+
+    .choice-btn {
+      background: #38bdf8;
+      border: none;
+      border-radius: 50%;
+      width: 70px;
+      height: 70px;
+      font-size: 1.5em;
+      cursor: pointer;
+      color: #fff;
+      transition: 0.3s ease;
+    }
+
+    .choice-btn:hover {
+      background: #0ea5e9;
+      transform: scale(1.1);
+    }
+
+    .result {
+      font-size: 1.1em;
+      margin-bottom: 15px;
+      color: #f1f5f9;
+      line-height: 1.4;
+    }
+
+    .scoreboard {
+      margin-bottom: 20px;
+    }
+
+    .scoreboard span {
+      display: inline-block;
+      margin: 0 10px;
+      font-weight: 600;
+    }
+
+    .reset-btn {
+      background: #ef4444;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .reset-btn:hover {
+      background: #dc2626;
+    }
+
+    .fade-enter-active, .fade-leave-active {
+      transition: opacity 0.5s;
+    }
+
+    .fade-enter-from, .fade-leave-to {
+      opacity: 0;
+    }
+
+    .highlight {
+      color: #22c55e;
+      font-weight: 600;
+    }
+
+    .highlight-red {
+      color: #ef4444;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="game-container">
+      <h1>Rock Paper Scissors</h1>
+
+      <!-- Name Entry Section -->
+      <div v-if="!gameStarted" class="name-section">
+        <input type="text" v-model="playerName" placeholder="Enter your name" />
+        <button class="start-btn" @click="startGame" :disabled="!playerName.trim()">Start Game</button>
+      </div>
+
+      <!-- Game Section -->
+      <div v-else>
+        <h2 style="margin-bottom: 15px;">Welcome, {{ playerName }} 👋</h2>
+
+        <div class="buttons">
+          <button class="choice-btn" @click="play('rock')">🪨</button>
+          <button class="choice-btn" @click="play('paper')">📄</button>
+          <button class="choice-btn" @click="play('scissors')">✂️</button>
+        </div>
+
+        <transition name="fade">
+          <div v-if="result" class="result">
+            You chose <strong>{{ playerChoice }}</strong>, computer chose <strong>{{ computerChoice }}</strong>.<br><br>
+            <span v-if="result === 'win'" class="highlight">🎉 {{ playerName }} Wins!</span>
+            <span v-else-if="result === 'lose'" class="highlight-red">💥 Computer Wins!</span>
+            <span v-else style="color:#facc15;">🤝 It's a Draw!</span>
+          </div>
+        </transition>
+
+        <div class="scoreboard">
+          <span>{{ playerName }}: {{ wins }}</span>
+          <span>Computer: {{ losses }}</span>
+        </div>
+
+        <button class="reset-btn" @click="resetScore">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { createApp } = Vue;
+
+    createApp({
+      data() {
+        return {
+          playerName: '',
+          gameStarted: false,
+          wins: 0,
+          losses: 0,
+          playerChoice: '',
+          computerChoice: '',
+          result: ''
+        };
+      },
+      methods: {
+        startGame() {
+          if (this.playerName.trim() !== '') {
+            this.gameStarted = true;
+          }
+        },
+        play(playerChoice) {
+          const choices = ['rock', 'paper', 'scissors'];
+          const computerChoice = choices[Math.floor(Math.random() * 3)];
+          this.playerChoice = playerChoice;
+          this.computerChoice = computerChoice;
+
+          if (playerChoice === computerChoice) {
+            this.result = 'draw';
+          } else if (
+            (playerChoice === 'rock' && computerChoice === 'scissors') ||
+            (playerChoice === 'paper' && computerChoice === 'rock') ||
+            (playerChoice === 'scissors' && computerChoice === 'paper')
+          ) {
+            this.result = 'win';
+            this.wins++;
+          } else {
+            this.result = 'lose';
+            this.losses++;
+          }
+        },
+        resetScore() {
+          this.wins = 0;
+          this.losses = 0;
+          this.result = '';
+          this.playerChoice = '';
+          this.computerChoice = '';
+        }
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>

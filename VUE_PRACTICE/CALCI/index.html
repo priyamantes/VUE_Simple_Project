@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Vue.js Modern Calculator</title>
+  <script src="https://unpkg.com/vue@3"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at top, #141E30, #243B55);
+    }
+
+    .calculator {
+      background: #1e293b;
+      padding: 25px;
+      border-radius: 25px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+      width: 320px;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .calculator:hover {
+      transform: scale(1.02);
+      box-shadow: 0 15px 45px rgba(0, 0, 0, 0.6);
+    }
+
+    .display {
+      background: #0f172a;
+      color: #00eaff;
+      border-radius: 15px;
+      padding: 15px;
+      font-size: 2rem;
+      text-align: right;
+      box-shadow: inset 0 0 10px #00eaff;
+      overflow-x: auto;
+      margin-bottom: 20px;
+      min-height: 60px;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+    }
+
+    button {
+      font-size: 1.3rem;
+      font-weight: 500;
+      border: none;
+      border-radius: 15px;
+      padding: 15px;
+      background: #334155;
+      color: white;
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #475569;
+      transform: translateY(-3px);
+    }
+
+    .operator {
+      background: #0ea5e9;
+      color: white;
+    }
+
+    .operator:hover {
+      background: #0284c7;
+    }
+
+    .equals {
+      background: linear-gradient(135deg, #06b6d4, #0ea5e9);
+      color: white;
+      grid-column: span 2;
+    }
+
+    .equals:hover {
+      background: linear-gradient(135deg, #0891b2, #0284c7);
+    }
+
+    .clear {
+      background: #f43f5e;
+    }
+
+    .clear:hover {
+      background: #e11d48;
+    }
+
+    @media (max-width: 400px) {
+      .calculator {
+        width: 90%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="calculator">
+      <div class="display">{{ display || '0' }}</div>
+      <div class="buttons">
+        <button class="clear" @click="clearDisplay">C</button>
+        <button @click="backspace">⌫</button>
+        <button class="operator" @click="appendOperator('%')">%</button>
+        <button class="operator" @click="appendOperator('/')">÷</button>
+
+        <button @click="appendNumber('7')">7</button>
+        <button @click="appendNumber('8')">8</button>
+        <button @click="appendNumber('9')">9</button>
+        <button class="operator" @click="appendOperator('*')">×</button>
+
+        <button @click="appendNumber('4')">4</button>
+        <button @click="appendNumber('5')">5</button>
+        <button @click="appendNumber('6')">6</button>
+        <button class="operator" @click="appendOperator('-')">−</button>
+
+        <button @click="appendNumber('1')">1</button>
+        <button @click="appendNumber('2')">2</button>
+        <button @click="appendNumber('3')">3</button>
+        <button class="operator" @click="appendOperator('+')">+</button>
+
+        <button @click="appendNumber('0')">0</button>
+        <button @click="appendDot">.</button>
+        <button class="equals" @click="calculate">=</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { createApp } = Vue;
+
+    createApp({
+      data() {
+        return {
+          display: ''
+        };
+      },
+      methods: {
+        appendNumber(num) {
+          this.display += num;
+        },
+        appendOperator(op) {
+          if (this.display === '') return;
+          const lastChar = this.display.slice(-1);
+          if (['+', '-', '*', '/', '%'].includes(lastChar)) return;
+          this.display += op;
+        },
+        appendDot() {
+          if (!this.display.includes('.') || /[+\-*/%]$/.test(this.display)) {
+            this.display += '.';
+          }
+        },
+        clearDisplay() {
+          this.display = '';
+        },
+        backspace() {
+          this.display = this.display.slice(0, -1);
+        },
+        calculate() {
+          try {
+            // Replace division symbol for JS evaluation
+            this.display = String(eval(this.display.replace('÷', '/')));
+          } catch (error) {
+            this.display = 'Error';
+          }
+        }
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>
